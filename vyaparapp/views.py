@@ -745,12 +745,20 @@ def distributor_profile(request):
 @login_required(login_url='login')
 def item_create(request):
   item_units = UnitModel.objects.filter(user=request.user.id)
-  return render(request,'company/item_create.html',{'item_units':item_units})
+  get_company_id_using_user_id = company.objects.get(user=request.user.id)
+  # permission
+  allmodules= modules_list.objects.get(company=get_company_id_using_user_id,status='New')
+  # permission
+  return render(request,'company/item_create.html',{'item_units':item_units,
+                                                    'allmodules':allmodules})
 
 @login_required(login_url='login')
 def items_list(request,pk):
   try:
     get_company_id_using_user_id = company.objects.get(user=request.user.id)
+    # permission
+    allmodules= modules_list.objects.get(company=get_company_id_using_user_id,status='New')
+    # permission
     all_items = ItemModel.objects.filter(company=get_company_id_using_user_id.id)
     if pk == 0:
       first_item = all_items.filter().first()
@@ -762,9 +770,13 @@ def items_list(request,pk):
       return render(request,'company/items_create_first_item.html')
     return render(request,'company/items_list.html',{'all_items':all_items,
                                                       'first_item':first_item,
-                                                      'transactions':transactions,})
+                                                      'transactions':transactions,
+                                                      "allmodules":allmodules})
   except:
-    return render(request,'company/items_create_first_item.html')
+    get_company_id_using_user_id = company.objects.get(user=request.user.id)
+    staff =  staff_details.objects.get(id=id)
+    allmodules= modules_list.objects.get(company=get_company_id_using_user_id.id,status='New')
+    return render(request,'company/items_create_first_item.html',{"allmodules":allmodules})
 
 @login_required(login_url='login')
 def item_create_new(request):
@@ -831,8 +843,13 @@ def item_delete(request,pk):
 def item_view_or_edit(request,pk):
   item = ItemModel.objects.get(id=pk)
   item_units = UnitModel.objects.filter(user=request.user.id)
+  get_company_id_using_user_id = company.objects.get(user=request.user.id)
+  # permission
+  allmodules= modules_list.objects.get(company=get_company_id_using_user_id,status='New')
+  # permission
   return render(request,'company/item_view_or_edit.html',{'item':item,
-                                                          'item_units':item_units,})
+                                                          'item_units':item_units,
+                                                          'allmodules':allmodules,})
 
   
 @login_required(login_url='login')
@@ -1161,5 +1178,26 @@ def deleteparty(request,id):
 
 
 
+#******************************************   ASHIKH V U (start) ****************************************************
+
+@login_required(login_url='login')
+def bank_create(request):
+  get_company_id_using_user_id = company.objects.get(user=request.user.id)
+  # permission
+  allmodules= modules_list.objects.get(company=get_company_id_using_user_id,status='New')
+  # permission
+  return render(request,'company/bank_create.html',{"allmodules":allmodules})
+
+@login_required(login_url='login')
+def banks_list(request,pk):
+  # if pk==0:
+  get_company_id_using_user_id = company.objects.get(user=request.user.id)
+  # permission
+  allmodules= modules_list.objects.get(company=get_company_id_using_user_id,status='New')
+  # permission
+  return render(request,'company/banks_list.html',{"allmodules":allmodules})    
 
 
+
+
+#******************************************   ASHIKH V U (end) ****************************************************

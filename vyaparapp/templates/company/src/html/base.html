@@ -258,13 +258,23 @@
               </button>
               <div class="dropdown-container" style="background-color: aliceblue;padding: 20px;justify-content: center;">
                 {% if allmodules.Bank_account != Null %}
+                <div class="position-relative">
+                  <div class="position-absolute end-0 bottom-0" style="z-index: 1;margin-bottom: -1.6em;margin-right: 0rem;">
+                    <a style="color: black;" href="{% url 'bank_create' %}"><span class="fs-5 fa fa-plus-circle"></span></a>
+                  </div>
+                </div>
                   <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
                     <!-- <i class="ti ti-mail fs-6"></i> -->
-                    <p class="mb-0 fs-3">Bank Accounts</p>
+                    <p class="mb-0 fs-3"><a href="{% url 'banks_list' 0 %}">Bank Accounts</a></p>
                   </a>
                   <hr>
                   {% endif %}
                   {% if allmodules.Cash_in_hand != Null %}
+                  <div class="position-relative">
+                    <div class="position-absolute end-0 bottom-0" style="z-index: 1;margin-bottom: -1.6em;margin-right: 0rem;">
+                      <a style="color: black;" href=""><span class="fs-5 fa fa-plus-circle"></span></a>
+                    </div>
+                  </div>
                   <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
                     <!-- <i class="ti ti-mail fs-6"></i> -->
                     <p class="mb-0 fs-3">Cash In Hand</p>
@@ -281,12 +291,27 @@
                   <hr>
                   {% endif %}
                   {% if allmodules.Loan_account != Null %}
+                  <div class="position-relative">
+                    <div class="position-absolute end-0 bottom-0" style="z-index: 1;margin-bottom: -1.6em;margin-right: 0rem;">
+                      <a style="color: black;" href=""><span class="fs-5 fa fa-plus-circle"></span></a>
+                    </div>
+                  </div>
                   <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
                     <!-- <i class="ti ti-user fs-6"></i> -->
                     <p class="mb-0 fs-3">Loan Accounts</p>
                   </a>
                   <hr>
                   {% endif %}
+                  <div class="position-relative">
+                    <div class="position-absolute end-0 bottom-0" style="z-index: 1;margin-bottom: -1.6em;margin-right: 0rem;">
+                      <a style="color: black;" href=""><span class="fs-5 fa fa-plus-circle"></span></a>
+                    </div>
+                  </div>
+                  <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+                    <!-- <i class="ti ti-user fs-6"></i> -->
+                    <p class="mb-0 fs-3">UPI</p>
+                  </a>
+                  <hr>
               </div>
             </li>
             

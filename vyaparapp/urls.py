@@ -115,6 +115,15 @@ urlpatterns = [
     path('edit_saveparty/<int:id>', views.edit_saveparty, name='edit_saveparty'),
     path('deleteparty/<int:id>', views.deleteparty, name='deleteparty'),
     #End
+
+    #******************************************   ASHIKH V U (start) ****************************************************
+
+    path('bank_create',views.bank_create,name='bank_create'),
+    path('banks_list/<int:pk>',views.banks_list,name='banks_list'),
+    
+
+    #******************************************   ASHIKH V U (start) ****************************************************
+
     
     re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
     
