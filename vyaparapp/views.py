@@ -1,3 +1,5 @@
+from http.client import HTTPResponse
+from re import A
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User, auth
@@ -774,7 +776,6 @@ def items_list(request,pk):
                                                       "allmodules":allmodules})
   except:
     get_company_id_using_user_id = company.objects.get(user=request.user.id)
-    staff =  staff_details.objects.get(id=id)
     allmodules= modules_list.objects.get(company=get_company_id_using_user_id.id,status='New')
     return render(request,'company/items_create_first_item.html',{"allmodules":allmodules})
 
@@ -1180,6 +1181,8 @@ def deleteparty(request,id):
 
 #******************************************   ASHIKH V U (start) ****************************************************
 
+from django.http import HttpResponse
+
 @login_required(login_url='login')
 def bank_create(request):
   get_company_id_using_user_id = company.objects.get(user=request.user.id)
@@ -1195,8 +1198,93 @@ def banks_list(request,pk):
   # permission
   allmodules= modules_list.objects.get(company=get_company_id_using_user_id,status='New')
   # permission
-  return render(request,'company/banks_list.html',{"allmodules":allmodules})    
+  try:
+    all_banks = BankModel.objects.filter(user=request.user.id)
+    if pk == 0:
+      first_bank = all_banks.filter().first()
+    else:
+      first_bank = all_banks.get(id=pk)
+    if all_banks.exists():
+      return render(request,'company/banks_list.html',{"allmodules":allmodules,
+                                                      "all_banks":all_banks,
+                                                      "bank":first_bank}) 
+    else:
+      return render(request,'company/bank_create_first_bank.html',{"allmodules":allmodules,}) 
+  except:
+    return render(request,'company/bank_create_first_bank.html',{"allmodules":allmodules,}) 
+    
 
+
+@login_required(login_url='login')
+def get_bank_to_bank(request):
+  return TemplateResponse(request,'company/bank_to_bank.html')
+
+@login_required(login_url='login')
+def get_bank_to_cash(request):
+  return TemplateResponse(request,'company/bank_to_cash.html')
+
+@login_required(login_url='login')
+def get_cash_to_bank(request):
+  return TemplateResponse(request,'company/cash_to_bank.html')
+
+@login_required(login_url='login')
+def bank_create_new(request):
+  if request.method=="POST":
+    user = User.objects.get(id=request.user.id)
+    get_company_id_using_user_id = company.objects.get(user=request.user.id)
+
+    bank_name = request.POST.get('bank_name')
+    account_num = request.POST['account_num']
+    bank_name = request.POST.get('bank_name')
+    account_num = request.POST['account_num']
+    if BankModel.objects.filter(bank_name=bank_name,user=request.user.id,account_num=account_num).exists():
+      parmission_var = 0
+    else:
+      parmission_var = 1
+    ifsc = request.POST.get('ifsc')
+    branch_name = request.POST['branch_name']
+    upi_id = request.POST.get('upi_id')
+    as_of_date = request.POST['as_of_date']
+    card_type = request.POST.get('card_type')
+    open_balance = request.POST['open_balance']
+    if open_balance == '' or open_balance == None:
+      open_balance = 0
+
+    if parmission_var == 1:
+      bank_data = BankModel(user=user,
+                            company=get_company_id_using_user_id,
+                            bank_name=bank_name,
+                            account_num=account_num,
+                            ifsc=ifsc,
+                            branch_name=branch_name,
+                            upi_id=upi_id,
+                            as_of_date=as_of_date,
+                            card_type=card_type,
+                            open_balance=open_balance,
+                            current_balance=open_balance,)
+      bank_data.save()
+    else:
+      messages.error(request,'Account number already exist')
+      return redirect('bank_create')
+  return redirect('banks_list',pk=0)
+
+@login_required(login_url='login')
+def bank_delete(request,pk):
+  bank = BankModel.objects.get(id=pk)
+  bank.delete()
+  return redirect('banks_list',pk=0)
+
+
+@login_required(login_url='login')
+def account_num_check(request):
+  if request.method=='POST':
+    bank_name = request.POST.get('bank_name')
+    account_num = request.POST['account_num']
+    if BankModel.objects.filter(bank_name=bank_name,user=request.user.id,account_num=account_num).exists():
+      return HttpResponse('<small><span class="tr fs-2">Account Number already excist</span></small>')
+    else:
+      return HttpResponse('')
+  return HttpResponse('')
 
 
 

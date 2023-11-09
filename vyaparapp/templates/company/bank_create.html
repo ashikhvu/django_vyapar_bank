@@ -5,7 +5,6 @@
 {% block content %}
 {% load static %}
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <style>
   .bs {
@@ -48,7 +47,7 @@
     margin-left: 0.5rem;
   }
   .field_credit_margin_top{
-    margin-top: 0.5rem;
+    margin-top: 0.62rem;
   }
   .field_label_margin_top
   {
@@ -98,8 +97,32 @@
             More <i class="fa fa-plus"></i></a>
         </div>
         <p></p>
-
-        <form action="{% url 'item_create_new' %}" method="post">
+        {% if messages %}
+        {% for i in messages %}
+          {% if messages.tags == warning %}
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>WARNING:</strong> {{ i }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% elif messages.tags == info %}
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <strong>INFO:</strong> {{ i }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% elif messages.tags == success %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>SUCCESS:</strong> {{ i }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% elif messages.tags == error %}
+          <div class="alert bg-danger alert-dismissible fade show" role="alert">
+            <strong>ERROR:</strong> {{ i }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+        <form action="{% url 'bank_create_new' %}" method="post">
           {% csrf_token %}
                   <div class="position-relative">
                     <div class="position-absolute end-0">
@@ -119,12 +142,21 @@
                       <div class="d-lg-flex d-md-flex d-xl-flex d-xxl-flex d-sm-none">
                         <div class="w-100">
                           <label for="">BANK NAME</label>
-                          <input style="color: black;" class="form-control border-dark fw-bolder" type="text" placeholder="BANK NAME" autocomplete="off" name="bank_name" required>
+                          <input style="color: black;" autofocus="true" class="form-control border-dark fw-bolder" type="text" placeholder="BANK NAME" autocomplete="off" name="bank_name" required>
                           <hr>
                         </div>
                         <div class="w-100 field_margin">
                           <label for="">ACCOUNT NUMBER</label>
-                          <input style="color: black;" class="form-control border-dark fw-bolder" type="number" placeholder="0000-0000-0000-0000" name="account_num" required>                        
+                          <input style="color: black;" class="form-control border-dark fw-bolder" type="number" placeholder="0000-0000-0000-0000" name="account_num" required
+                          hx-post="{% url 'account_num_check' %}"
+                          hx-trigger="keyup delay:0s"
+                          hx-target="#account_num_check_target"
+                          >        
+                          <div class="position-relative">
+                            <div class="position-absolute start-50 translate-middle-x">
+                              <div id="account_num_check_target"></div>
+                            </div>
+                          </div>                
                           <hr>
                         </div>
                         <div class="w-100 field_margin">
@@ -137,17 +169,17 @@
                       <div class="d-lg-flex d-md-flex d-xl-flex d-xxl-flex d-sm-none">
                         <div class="w-100">
                           <label for="">BRANCH NAME</label>
-                          <input style="color: black;" class="form-control border-dark fw-bolder" type="text" placeholder="BRANCH NAME" autocomplete="off" name="item_name" required>
+                          <input style="color: black;" class="form-control border-dark fw-bolder" type="text" placeholder="BRANCH NAME" autocomplete="off" name="branch_name" required>
                           <hr>
                         </div>
                         <div class="w-100 field_margin">
                           <label for="">UPI ID</label>
-                          <input style="color: black;" class="form-control border-dark fw-bolder" type="number" placeholder="user@bankname" name="item_hsn" required>                        
+                          <input style="color: black;" class="form-control border-dark fw-bolder" type="text" placeholder="user@bankname" name="upi_id" >                        
                           <hr>
                         </div>
                         <div class="w-100 field_margin">
                           <label for="">AS OF DATE</label>
-                          <input style="color: black;" class="form-control border-dark fw-bolder" type="date" placeholder="IFSC CODE" name="item_hsn" required>
+                          <input id="date_" style="color: black;" class="form-control border-dark fw-bolder" type="date" placeholder="IFSC CODE" name="as_of_date" required>
                           <hr>
                         </div>
                       </div>
@@ -157,10 +189,10 @@
                           <label for="">CARD TYPE</label>
                           <div class="position-relative">
                               <div class="position-absolute start-0 top-0 field_credit_margin_top" style=" margin-left: 0.8rem;">
-                                  <span class="fa fa-credit-card-alt tb fs-4" aria-hidden="true"></span>
+                                  <span class="fa fa-credit-card tb fs-4" aria-hidden="true"></span>
                               </div>
                           </div>
-                          <select style="color: black;" class="form-select border-dark bg-light ps-5" id="" name="item_unit" required>
+                          <select style="color: black;" class="form-select border-dark bg-light ps-5" id="" name="card_type" required>
                             <option value="DEBIT"><span class="fa fa-credit-card-alt tb fs-4"></span> DEBIT</option>
                             <option value="CREDIT">CREDIT</option>
                           </select>
@@ -168,7 +200,7 @@
                         </div>
                         <div class="w-100 field_margin">
                           <label for="">OPENING BALANCE</label>
-                          <input style="color: black;" class="form-control border-dark fw-bolder" type="text" placeholder="OPENING BALANCE" autocomplete="off" name="item_name" required>
+                          <input style="color: black;" class="form-control border-dark fw-bolder" type="text" placeholder="OPENING BALANCE" autocomplete="off" name="open_balance">
                           <hr>
                         </div>
                       </div>

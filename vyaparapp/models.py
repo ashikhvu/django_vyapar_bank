@@ -139,3 +139,21 @@ class TransactionModel(models.Model):
     trans_created_date = models.DateTimeField(auto_now_add=True,null=True)
 
 # ========================= ASHIKH V U (END)===========================
+
+#************************   ASHIKH V U (start) *************************
+
+class BankModel(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE,blank=True,null=True)
+    company = models.ForeignKey(company,on_delete=models.CASCADE,blank=True,null=True)
+    bank_name = models.CharField(max_length=255)
+    account_num = models.PositiveBigIntegerField(null=True)
+    ifsc = models.CharField(max_length=255)
+    branch_name = models.CharField(max_length=255)
+    upi_id = models.CharField(max_length=255)
+    as_of_date = models.DateField(null=True)
+    card_type = models.CharField(max_length=255)
+    open_balance = models.BigIntegerField(null=True)
+    current_balance = models.BigIntegerField(null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+
+#************************   ASHIKH V U (end) *************************

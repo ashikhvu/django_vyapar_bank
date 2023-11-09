@@ -8,7 +8,6 @@
 <script src="https://unpkg.com/htmx.org@1.9.6" integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni" crossorigin="anonymous"></script>
 <!-- Load SheetJS from a CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 {% load my_extras %}
 
@@ -43,7 +42,6 @@
         background-color: rgb(239, 3, 82)
     }
 </style>
-
 
 <div class="body-wrapper">
     <br><br><br>
@@ -101,34 +99,34 @@
                         <hr class="p-0 m-0">
                     </div>
                     <div class="col-12 p-3 pt-0">
-                        {% if all_items %}
+                        {% if all_banks %}
                         <div id="item_search_filter_target">
                             <form action="" method="post">
                                 {% csrf_token %}
 
                                 <div style="overflow: auto;height: 42rem;">
-                                <table class="table w-100 table-light table-striped table-hover">
+                                <table id="table1" class="table w-100 table-light table-striped table-hover">
                                     <thead class="bg-primary">
                                         <th class="text-start fs-2 tb">ACCOUNT NAME</th>
                                         <th class="text-end fs-2 tb">AMOUNT</th>
                                     </thead>
                                     <tbody>
-                                        {% for i in all_items %}
+                                        {% for i in all_banks %}
                                         <tr class="item_lists_hide">
                                             <td style="cursor:pointer" class="text-start fs-2 fw-bold text-dark"
                                             hx-post="{% url 'item_get_detail' i.id %}"
                                             hx-trigger="click delay:0s"
                                             hx-target="#item_get_detail_target"
-                                            >{{ i.item_name|capfirst }}</td>
-                                            <td class="text-end fs-2 fw-bolder" style="color: green;">
-                                                {{ i.item_current_stock }}
+                                            >{{ i.bank_name|upper }}</td>
+                                            <td class="text-end pe-0 me-0 fs-2 fw-bolder" style="color: green;">
+                                                <span class="amount_tuncate">{{ i.current_balance }}</span>
                                                 <div class="btn-group mb-1">
                                                     <button style="border: none;background: none;" type="button" class="ropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        <span class="fa fa-ellipsis-v text-dark fs-1 ps-2"></span>
+                                                        <span class="fa fa-ellipsis-v text-dark fs-1 ps-0"></span>
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                     <li><a class="dropdown-item fw-bold tb" href="{% url 'item_view_or_edit' i.id %}"><span class="fa fa-eye pe-2 tg"></span> View / Edit</a></li>
-                                                    <li><a class="dropdown-item fw-bold tb" type="button" onclick="confirm_delete({{ i.id }})"><span class="fa fa-trash-alt tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</a></li>
+                                                    <li><a class="dropdown-item fw-bold tb" type="button" onclick="confirm_delete({{ i.id }})"><span class="fa fa-trash tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</a></li>
                                                     </ul>
                                                 </div>
                                             </td>
@@ -157,28 +155,45 @@
                     <div class="d-flex justify-content-between">
                         <p class="tb fw-bolder fs-2">BANK NAME <span class="fa fa-share ps-1 tb"></span></p>
                         <div class="btn-group mb-1">
-                            <button class="btn btn-sm btn-primary fs-2" style="border-radius: 3px;" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-sm btn-primary fs-2" style="border-radius: 5px;" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="fa fa-sliders-h pe-1"></span> 
                                 DEPOSIT / WITHDRAW
                             </button>
                             <ul class="dropdown-menu">
-                            <li><a class="dropdown-item fw-bold tb" href=""><span class="fa fa-eye pe-2 tg"></span> View / Edit</a></li>
-                            <li><a class="dropdown-item fw-bold tb" type="button" onclick="confirm_delete({{ i.id }})"><span class="fa fa-trash-alt tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</a></li>
+                            <li 
+                            hx-get="{% url 'get_bank_to_bank' %}"
+                            hx-trigger="click delay:0s"
+                            hx-target="#bank_modal_get_details"
+                            >
+                                <a class="dropdown-item fw-bold tb" href="" data-bs-target="#myModal1" data-bs-toggle="modal"> BANK TO BANK</a></li>
+                            <li
+                            hx-get="{% url 'get_bank_to_cash' %}"
+                            hx-trigger="click delay:0s"
+                            hx-target="#bank_modal_get_details"
+                            >
+                            <a class="dropdown-item fw-bold tb" href="" data-bs-target="#myModal1" data-bs-toggle="modal"> BANK TO CASH</a></li>
+                            <li
+                            hx-get="{% url 'get_cash_to_bank' %}"
+                            hx-trigger="click delay:0s"
+                            hx-target="#bank_modal_get_details"
+                            ><a class="dropdown-item fw-bold tb" type="button" data-bs-target="#myModal1" data-bs-toggle="modal"> CASH TO BANK</a></li>
+
+                            <li><a class="dropdown-item fw-bold tb" href=""> ACCOUNT BALANCE</a></li>
                             </ul>
                         </div>
                     </div>
                     <p></p>
                     <div class="d-flex justify-content-between">
-                        <p class="tb fw-bolder fs-2">ACCOUNT NUMBER  <span class="ps-2 tg">₹</span></p>
+                        <p class="tb fw-bolder fs-2">ACCOUNT NUMBER  <span class="ps-2 tg">{{ bank.account_num }}</span></p>
                         <!-- <p class="tb fw-bolder fs-2">STOCK QUANTITY  <span class="ps-2 tg"></span></p> -->
                     </div>
                     <div class="d-flex justify-content-between">
-                        <p class="tb fw-bolder fs-2">IFSC CODE  <span class="ps-2 tg">IFSC351</span></p>
+                        <p class="tb fw-bolder fs-2">IFSC CODE  <span class="ps-2 tg">{{ bank.ifsc }}</span></p>
                         
                     </div>
                     <div class="d-flex justify-content-between">
-                        <p class="tb fw-bolder fs-2">UPI ID  <span class="ps-2 tg">subu@sbi</span></p>
-                        <p class="tb fw-bolder fs-2">BALANCE  <span class="ps-2 tg">₹ 0.00</span></p>
+                        <p class="tb fw-bolder fs-2">UPI ID  <span class="ps-2 tg">{% if bank.upi_id %}{{ bank.upi_id }}{% else %}Nill{% endif %}</span></p>
+                        <p class="tb fw-bolder fs-2">BALANCE  <span class="ps-2 tg">₹ {{ bank.current_balance }}</span></p>
                     </div>
                 </div>
             </div>
@@ -240,13 +255,13 @@
                                                             hx-trigger="click delay:0s"
                                                             hx-target="#item_transaction_view_or_edit_target"
                                                             ><span class="fa fa-eye pe-2 tg"></span> View / Edit</button></li>
-                                                          <li><button type="button" onclick="delete_transaction({{ i.id }})" class="dropdown-item fw-bold tb hide_table_text_d" href=""><span class="fa fa-trash-alt tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</button></li>
+                                                          <li><button type="button" onclick="delete_transaction({{ i.id }})" class="dropdown-item fw-bold tb hide_table_text_d" href=""><span class="fa fa-trash tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</button></li>
                                                         </ul>
                                                     </div>
                                                 </td>
                                             </tr>
                                         {% endfor %}
-                                        <tr {% if first_item.item_opening_stock == 0 %} hidden{% endif %}>
+                                        <tr {% if bank.open_balance == 0 %} hidden{% endif %}>
                                             <td class="text-center" style="padding-top: 1.4rem;">
                                                 <div class="d-flex justify-content-center">
                                                     <div style="width: 10px;height: 10px;" class="bg-dark rounded-pill bs_sm"></div>
@@ -263,7 +278,7 @@
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                       <li><a class="dropdown-item fw-bold tb hide_table_text_v" href=""><span class="fa fa-eye pe-2 tg"></span> View / Edit</a></li>
-                                                      <li><a class="dropdown-item fw-bold tb hide_table_text_d" onclick="item_open_stk_delete({{ first_item.id }})"><span class="fa fa-trash-alt tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</a></li>
+                                                      <li><a class="dropdown-item fw-bold tb hide_table_text_d" onclick="item_open_stk_delete({{ first_item.id }})"><span class="fa fa-trash tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</a></li>
                                                     </ul>
                                                 </div>
                                             </td>
@@ -278,33 +293,12 @@
         </div>
     </div>
 </div>
- 
 
-<!-- modal adjustment create start -->
-<!-- <div class="modal modal-lg fade p-0" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog p-0">
-    <div class="modal-content p-0">
-        <div id="item_get_details_for_modal_target">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modal 1</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Content for Modal 1 goes here.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-  </div>
-</div> -->
-
-<!-- modal adjustment create end -->
 
 <div class="modal modal-lg fade" id="myModal1" tabindex="-1" aria-labelledby="myModal1Label" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div id="item_get_details_for_modal_target">
+            <div id="bank_modal_get_details">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Modal 1</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -324,7 +318,7 @@
 <div class="modal modal-lg fade" id="myModal2" tabindex="-1" aria-labelledby="myModal2Label" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div id="item_transaction_view_or_edit_target">
+            <div id="bank_modal_view_or_edit">
                 
             </div>
         </div>
@@ -335,140 +329,160 @@
 
 
 <script>
-    // function exportToExcel() {
-    //     $('.hide_table_text_v').text('')
-    //     $('.hide_table_text_d').text('')
-    //     const table = document.getElementById('myTable');
-    //     const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-    //     XLSX.writeFile(wb, "table_data.xlsx");
-    //     $('.hide_table_text_v').html('<span class="fa fa-eye pe-2 tg"></span> View / Edit')
-    //     $('.hide_table_text_d').html('<span class="fa fa-trash-alt tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete')
-    // }
-    // $(document).ready(function() {
-    //     $("#search_input1").on("keyup", function() {
-    //         var value = $(this).val().toLowerCase();
-    //         $("#myTable tbody tr").filter(function() {
-    //             $(this).toggle($(this).text().toLowerCase().indexOf(value)>-1);
-    //         });
-    //     });
-    // });
-    // $(document).ready(function(){
-    //     $('#search_item').click(function(){
-    //         $(this).attr('hidden',true)
-    //         $('#search_item_input').attr('hidden',false)
-    //         $('#close_seacrh').attr('hidden',false)
-    //         $('#add_item_btn').attr('hidden',true)
-    //     })
-    // })
-    // $(document).ready(function(){
-    //     $('#close_seacrh').click(function(){
-    //         $('#search_item_input').val('')
-    //         $('#search_item_input').attr('hidden',true)
-    //         $('#search_item').attr('hidden',false)
-    //         $('#add_item_btn').attr('hidden',false)
-    //         $('#close_seacrh').attr('hidden',true)
-    //     })
-    // })
-    // function confirm_delete(Id)
-    // {
-    //     swal({
-    //         title: "Confirmation !",
-    //         text: "Do you want to Delete this item?",
-    //         icon: "warning",
-    //         buttons: true,
-    //         dangerMode: true,
-    //     })
-    //     .then((willDelete) => {
-    //         if (willDelete) {
-    //             swal({
-    //                 title: "Deleted !",
-    //                 text: "Item Deleted Successfilly!",
-    //                 icon: "success",
-    //                 buttons: false,
-    //             })
-    //             // 
-    //             .then((willDelete) => {
-    //             if (willDelete) {
-    //                 // Redirect to the delete_teacher view with the teacher's ID
-    //                 window.location.href = "{% url 'item_delete' 0 %}".replace('0', Id);
-                    
-    //             } else {
-    //                 window.location.href = "{% url 'item_delete' 0 %}".replace('0', Id);
-    //             }
-    //         });
-    //             // 
-    //         } else {
-    //             swal("Action Cancelled!");
-    //         }
-    //     });
-    // }
-    // function delete_transaction(Id)
-    // {
-    //     swal({
-    //         title: "Confirmation !",
-    //         text: "Do you want to Delete this Transaction?",
-    //         icon: "warning",
-    //         buttons: true,
-    //         dangerMode: true,
-    //     })
-    //     .then((willDelete) => {
-    //         if (willDelete) {
-    //             swal({
-    //                 title: "Deleted !",
-    //                 text: "Transaction Deleted Successfilly!",
-    //                 icon: "success",
-    //                 buttons: false,
-    //             })
-    //             // 
-    //             .then((willDelete) => {
-    //             if (willDelete) {
-    //                 // Redirect to the delete_teacher view with the teacher's ID
-    //                 window.location.href = "{% url 'transaction_delete' 0 %}".replace('0', Id);
-                    
-    //             } else {
-    //                 window.location.href = "{% url 'transaction_delete' 0 %}".replace('0', Id);
-    //             }
-    //         });
-    //             // 
-    //         } else {
-    //             swal("Action Cancelled!");
-    //         }
-    //     });
-    // }
+    $(document).ready(function(){
+        var table = $('#table1 tr td .amount_tuncate')
+        for(i=0;i<table.length;i++)
+        {
+            alert(i)
+        }
+        var b = $('.amount_tuncate').text()
+        var a = parseInt(b)
+        if (a >= 1e9) {
+            $('.amount_tuncate').text( '₹'+(a / 1e9).toFixed() + 'B');
+        } else if (a >= 1e6) {
+            $('.amount_tuncate').text( '₹'+(a / 1e6).toFixed() + 'M');
+        } else if (a >= 1e3) {
+            $('.amount_tuncate').text( '₹'+(a / 1e3).toFixed() + 'K');
+        } else {
+            $('.amount_tuncate').text( '₹'+a.toFixed());
+        }
+    })
 
-    // function item_open_stk_delete(Id)
-    // {
-    //     swal({
-    //         title: "Confirmation !",
-    //         text: "Do you want to Delete this Opening Stock Detail?",
-    //         icon: "warning",
-    //         buttons: true,
-    //         dangerMode: true,
-    //     })
-    //     .then((willDelete) => {
-    //         if (willDelete) {
-    //             swal({
-    //                 title: "Deleted !",
-    //                 text: "Opening Stock Deleted Successfilly!",
-    //                 icon: "success",
-    //                 buttons: false,
-    //             })
-    //             // 
-    //             .then((willDelete) => {
-    //             if (willDelete) {
-    //                 // Redirect to the delete_teacher view with the teacher's ID
-    //                 window.location.href = "{% url 'item_delete_open_stk' 0 %}".replace('0', Id);
+
+    function exportToExcel() {
+        $('.hide_table_text_v').text('')
+        $('.hide_table_text_d').text('')
+        const table = document.getElementById('myTable');
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+        XLSX.writeFile(wb, "table_data.xlsx");
+        $('.hide_table_text_v').html('<span class="fa fa-eye pe-2 tg"></span> View / Edit')
+        $('.hide_table_text_d').html('<span class="fa fa-trash-alt tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete')
+    }
+    $(document).ready(function() {
+        $("#search_input1").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#myTable tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value)>-1);
+            });
+        });
+    });
+    $(document).ready(function(){
+        $('#search_item').click(function(){
+            $(this).attr('hidden',true)
+            $('#search_item_input').attr('hidden',false)
+            $('#close_seacrh').attr('hidden',false)
+            $('#add_item_btn').attr('hidden',true)
+        })
+    })
+    $(document).ready(function(){
+        $('#close_seacrh').click(function(){
+            $('#search_item_input').val('')
+            $('#search_item_input').attr('hidden',true)
+            $('#search_item').attr('hidden',false)
+            $('#add_item_btn').attr('hidden',false)
+            $('#close_seacrh').attr('hidden',true)
+        })
+    })
+    function confirm_delete(Id)
+    {
+        swal({
+            title: "Confirmation !",
+            text: "Do you want to Delete this Bank?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                swal({
+                    title: "Deleted !",
+                    text: "Bank Deleted Successfilly!",
+                    icon: "success",
+                    buttons: false,
+                })
+                // 
+                .then((willDelete) => {
+                if (willDelete) {
+                    // Redirect to the delete_teacher view with the teacher's ID
+                    window.location.href = "{% url 'bank_delete' 0 %}".replace('0', Id);
                     
-    //             } else {
-    //                 window.location.href = "{% url 'item_delete_open_stk' 0 %}".replace('0', Id);
-    //             }
-    //         });
-    //             // 
-    //         } else {
-    //             swal("Action Cancelled!");
-    //         }
-    //     });
-    // }
+                } else {
+                    window.location.href = "{% url 'bank_delete' 0 %}".replace('0', Id);
+                }
+            });
+                // 
+            } else {
+                swal("Action Cancelled!");
+            }
+        });
+    }
+    function delete_transaction(Id)
+    {
+        swal({
+            title: "Confirmation !",
+            text: "Do you want to Delete this Transaction?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                swal({
+                    title: "Deleted !",
+                    text: "Transaction Deleted Successfilly!",
+                    icon: "success",
+                    buttons: false,
+                })
+                // 
+                .then((willDelete) => {
+                if (willDelete) {
+                    // Redirect to the delete_teacher view with the teacher's ID
+                    window.location.href = "{% url 'transaction_delete' 0 %}".replace('0', Id);
+                    
+                } else {
+                    window.location.href = "{% url 'transaction_delete' 0 %}".replace('0', Id);
+                }
+            });
+                // 
+            } else {
+                swal("Action Cancelled!");
+            }
+        });
+    }
+
+    function item_open_stk_delete(Id)
+    {
+        swal({
+            title: "Confirmation !",
+            text: "Do you want to Delete this Opening Stock Detail?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                swal({
+                    title: "Deleted !",
+                    text: "Opening Stock Deleted Successfilly!",
+                    icon: "success",
+                    buttons: false,
+                })
+                // 
+                .then((willDelete) => {
+                if (willDelete) {
+                    // Redirect to the delete_teacher view with the teacher's ID
+                    window.location.href = "{% url 'item_delete_open_stk' 0 %}".replace('0', Id);
+                    
+                } else {
+                    window.location.href = "{% url 'item_delete_open_stk' 0 %}".replace('0', Id);
+                }
+            });
+                // 
+            } else {
+                swal("Action Cancelled!");
+            }
+        });
+    }
 </script>
 
 {% endblock  %}
