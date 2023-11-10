@@ -1182,6 +1182,65 @@ def deleteparty(request,id):
 #******************************************   ASHIKH V U (start) ****************************************************
 
 from django.http import HttpResponse
+import re
+
+# account number validation
+def validate_bank_account_number(acc_num):
+  regex='^[0-9]{9,18}'
+  if re.match(regex,acc_num):
+    return True
+  else:
+    return False
+
+# ifsc code validaion
+def validate_ifsc(ifsc_code):
+    regex = re.compile(r'^[A-Za-z]{4}\d{7}$')
+    if regex.match(ifsc_code):
+        return True
+    else:
+        return False
+
+@login_required(login_url='login')
+def account_num_check(request):
+  if request.method=='POST':
+    bank_name = request.POST.get('bank_name')
+    account_num = request.POST['account_num']
+    account_num_valid = validate_bank_account_number(account_num)
+    if account_num_valid:
+      if BankModel.objects.filter(bank_name=bank_name,user=request.user.id,account_num=account_num).exists():
+        return HttpResponse('<small><span class="tr fs-2">Account Number already excist</span></small>')
+      else:
+        return HttpResponse('')
+    else:
+      return HttpResponse('<small><span class="tr fs-2">Account Number is not valid</span></small>')
+  return HttpResponse('')
+
+@login_required(login_url='login')
+def account_num_check_for_edit(request,pk):
+  if request.method=='POST':
+    bank_name = request.POST.get('bank_name')
+    account_num = request.POST['account_num']
+    account_num_valid = validate_bank_account_number(account_num)
+    if account_num_valid:
+      if BankModel.objects.exclude(id=pk).filter(bank_name=bank_name,user=request.user.id,account_num=account_num).exists():
+        return HttpResponse('<small><span class="tr fs-2">Account Number already excist</span></small>')
+      else:
+        return HttpResponse('')
+    else:
+      return HttpResponse('<small><span class="tr fs-2">Account Number is not valid</span></small>')
+  return HttpResponse('')
+
+@login_required(login_url='login')
+def bank_ifsc_check (request):
+  if request.method=='POST':
+    bank_ifsc = request.POST.get('ifsc')
+    print(bank_ifsc)
+    ifsc_valid = validate_ifsc(bank_ifsc)
+    if ifsc_valid:
+      return HttpResponse('')
+    else:
+      return HttpResponse('<small><span class="tr fs-2">IFSC Code is not valid</span></small>')
+  return HttpResponse('')
 
 @login_required(login_url='login')
 def bank_create(request):
@@ -1217,15 +1276,18 @@ def banks_list(request,pk):
 
 @login_required(login_url='login')
 def get_bank_to_bank(request):
-  return TemplateResponse(request,'company/bank_to_bank.html')
+  banks = BankModel.objects.filter(user=request.user.id)
+  return TemplateResponse(request,'company/bank_bank_to_bank.html',{'banks':banks})
 
 @login_required(login_url='login')
 def get_bank_to_cash(request):
-  return TemplateResponse(request,'company/bank_to_cash.html')
+  banks = BankModel.objects.filter(user=request.user.id)
+  return TemplateResponse(request,'company/bank_bank_to_cash.html',{'banks':banks})
 
 @login_required(login_url='login')
 def get_cash_to_bank(request):
-  return TemplateResponse(request,'company/cash_to_bank.html')
+  banks = BankModel.objects.filter(user=request.user.id)
+  return TemplateResponse(request,'company/bank_cash_to_bank.html',{'banks':banks})
 
 @login_required(login_url='login')
 def bank_create_new(request):
@@ -1237,36 +1299,61 @@ def bank_create_new(request):
     account_num = request.POST['account_num']
     bank_name = request.POST.get('bank_name')
     account_num = request.POST['account_num']
-    if BankModel.objects.filter(bank_name=bank_name,user=request.user.id,account_num=account_num).exists():
+    if BankModel.objects.exclude(company=request.user.id).filter(bank_name=bank_name,user=request.user.id,account_num=account_num).exists():
       parmission_var = 0
     else:
       parmission_var = 1
+    if validate_bank_account_number(account_num):
+      parmission_var1 = 1
+    else:
+      parmission_var1 = 0
     ifsc = request.POST.get('ifsc')
+    if validate_ifsc(ifsc):
+      parmission_var2 = 1
+    else:
+      parmission_var2 = 0
     branch_name = request.POST['branch_name']
     upi_id = request.POST.get('upi_id')
     as_of_date = request.POST['as_of_date']
     card_type = request.POST.get('card_type')
     open_balance = request.POST['open_balance']
+    
     if open_balance == '' or open_balance == None:
       open_balance = 0
-
+    if card_type == "DEBIT":
+      open_balance = int(open_balance)*-1
+      
     if parmission_var == 1:
-      bank_data = BankModel(user=user,
-                            company=get_company_id_using_user_id,
-                            bank_name=bank_name,
-                            account_num=account_num,
-                            ifsc=ifsc,
-                            branch_name=branch_name,
-                            upi_id=upi_id,
-                            as_of_date=as_of_date,
-                            card_type=card_type,
-                            open_balance=open_balance,
-                            current_balance=open_balance,)
-      bank_data.save()
+      if parmission_var1 == 1:
+        if parmission_var2 == 1:
+          bank_data = BankModel(user=user,
+                                company=get_company_id_using_user_id,
+                                bank_name=bank_name,
+                                account_num=account_num,
+                                ifsc=ifsc,
+                                branch_name=branch_name,
+                                upi_id=upi_id,
+                                as_of_date=as_of_date,
+                                card_type=card_type,
+                                open_balance=open_balance,
+                                current_balance=open_balance,
+                                created_by=user.first_name)
+          bank_data.save()
+          if request.POST.get('save_and_next'):
+            messages.success(request,'Bank created successfully')
+            return redirect('bank_create')
+          else:
+            return redirect('banks_list',pk=bank_data.id)
+        else:
+          messages.error(request,'IFSC CODE is not valid')
+          return redirect('bank_create')
+      else:
+        messages.error(request,'Account number is not valid')
+        return redirect('bank_create')
     else:
       messages.error(request,'Account number already exist')
       return redirect('bank_create')
-  return redirect('banks_list',pk=0)
+  return redirect('banks_list',pk=bank_data.id)
 
 @login_required(login_url='login')
 def bank_delete(request,pk):
@@ -1274,17 +1361,105 @@ def bank_delete(request,pk):
   bank.delete()
   return redirect('banks_list',pk=0)
 
+@login_required(login_url='login')
+def bank_view_or_edit(request,pk):
+  bank = BankModel.objects.get(id=pk)
+  return render(request,'company/bank_view_or_edit.html',{"bank":bank})
 
 @login_required(login_url='login')
-def account_num_check(request):
-  if request.method=='POST':
+def bank_update(request,pk):
+  if request.method=="POST":
+    user = User.objects.get(id=request.user.id)
+    get_company_id_using_user_id = company.objects.get(user=request.user.id)
+    bank_data = BankModel.objects.get(id=pk)
+
     bank_name = request.POST.get('bank_name')
     account_num = request.POST['account_num']
-    if BankModel.objects.filter(bank_name=bank_name,user=request.user.id,account_num=account_num).exists():
-      return HttpResponse('<small><span class="tr fs-2">Account Number already excist</span></small>')
+    bank_name = request.POST.get('bank_name')
+    account_num = request.POST['account_num']
+    if BankModel.objects.exclude(id=pk).filter(bank_name=bank_name,user=request.user.id,account_num=account_num).exists():
+      parmission_var = 0
     else:
-      return HttpResponse('')
-  return HttpResponse('')
+      parmission_var = 1
+    if validate_bank_account_number(account_num):
+      parmission_var1 = 1
+    else:
+      parmission_var1 = 0
+    ifsc = request.POST.get('ifsc')
+    if validate_ifsc(ifsc):
+      parmission_var2 = 1
+    else:
+      parmission_var2 = 0
+    branch_name = request.POST['branch_name']
+    upi_id = request.POST.get('upi_id')
+    as_of_date = request.POST['as_of_date']
+    card_type = request.POST.get('card_type')
+    open_balance = request.POST['open_balance']
+    
+    if open_balance == '' or open_balance == None:
+      open_balance = 0
+    if card_type == "DEBIT":
+      open_balance = int(open_balance)*-1
+    if parmission_var == 1:
+      if parmission_var1 == 1:
+        if parmission_var2 == 1:
+          bank_data.user = user
+          bank_data.company = get_company_id_using_user_id
+          bank_data.bank_name = bank_name
+          bank_data.account_num = account_num
+          bank_data.ifsc = ifsc
+          bank_data.branch_name = branch_name
+          bank_data.upi_id = upi_id
+          bank_data.as_of_date = as_of_date
+          bank_data.card_type = card_type
+          bank_data.open_balance = open_balance
+          if int(bank_data.open_balance) < int(open_balance):
+            bank_data.current_balance = int(bank_data.current_balance) - int(open_balance) - int(bank_data.open_balance)
+          elif int(bank_data.open_balance) == int(open_balance):
+            bank_data.current_balance = int(open_balance)
+          else:
+            bank_data.current_balance = int(bank_data.current_balance)+ int(bank_data.open_balance) - int(open_balance)
+          bank_data.user = user
+          bank_data.save()
+        else:
+          messages.error(request,'IFSC CODE is not valid')
+          return redirect('bank_create')
+      else:
+        messages.error(request,'Account number is not valid')
+        return redirect('bank_create')
+    else:
+      messages.error(request,'Account number already exist')
+      return redirect('bank_create')
+  return redirect('banks_list',pk=bank_data.id)
+
+
+@login_required(login_url='login')
+def bank_to_bank_transaction_create(request,pk):
+  if request.method=="POST":
+    user = User.objects.get(id=request.user.id)
+    get_company_id_using_user_id = company.objects.get(user=request.user.id)
+    from_here = request.POST.get('from_here')
+    from_data = BankModel.objects.get(id=from_here)
+    from_here = from_data.bank_name
+    to_here = request.POST.get('to_here')
+    to_data = BankModel.objects.get(id=to_here)
+    to_here = to_data.bank_name
+    type = "BANK TO BANK"
+    name = request.user.first_name
+    amount = request.POST.get('amount')
+    date = request.POST.get('date')
+    transaction_data = TransactionModel(user = user,
+                                        company=get_company_id_using_user_id,
+                                        from_here=from_here,
+                                        to_here=to_here,
+                                        type=type,
+                                        name=name,
+                                        amount=amount,
+                                        date=date,
+                                        )
+    transaction_data.save()
+    return redirect('banks_list',pk=from_data.id)
+
 
 
 

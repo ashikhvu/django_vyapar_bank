@@ -80,19 +80,11 @@
                             </div>
                             <div class="position-relative">
                                 <div class="position-absolute end-0" style="margin-top:0.5rem;margin-right:0.7rem">
-                                    <span hidden id="close_seacrh" class="fa fa-times fs-4 tr"
-                                    hx-post="{% url 'item_search_filter' %}"
-                                    hx-trigger="click delay:0.1s"
-                                    hx-target="#item_search_filter_target"
-                                    ></span>
+                                    <span hidden id="close_seacrh" class="fa fa-times fs-4 tr"></span>
                                 </div>
                             </div>
                         
-                            <input hidden id="search_item_input" class="form-control border-dark text-dark" type="text" placeholder="search here.." name="searching_item"
-                            hx-post="{% url 'item_search_filter' %}"
-                            hx-trigger="keyup"
-                            hx-target="#item_search_filter_target"
-                            >
+                            <input hidden id="search_item_input" class="form-control border-dark text-dark" type="text" placeholder="search here.." name="searching_item">
                         </form>
                     </div>
                     <div class="ps-3 pe-3">
@@ -113,19 +105,15 @@
                                     <tbody>
                                         {% for i in all_banks %}
                                         <tr class="item_lists_hide">
-                                            <td style="cursor:pointer" class="text-start fs-2 fw-bold text-dark"
-                                            hx-post="{% url 'item_get_detail' i.id %}"
-                                            hx-trigger="click delay:0s"
-                                            hx-target="#item_get_detail_target"
-                                            >{{ i.bank_name|upper }}</td>
+                                            <td style="cursor:pointer" class="text-start fs-2 fw-bold text-dark"><a style="color: black;font-weight: 500;" href="{% url 'banks_list' i.id %}">{{ i.bank_name|upper }}</a></td>
                                             <td class="text-end pe-0 me-0 fs-2 fw-bolder" style="color: green;">
-                                                <span class="amount_tuncate">{{ i.current_balance }}</span>
+                                                <span class="amount_truncate">{{ i.current_balance }}</span>
                                                 <div class="btn-group mb-1">
                                                     <button style="border: none;background: none;" type="button" class="ropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                                                         <span class="fa fa-ellipsis-v text-dark fs-1 ps-0"></span>
                                                     </button>
                                                     <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item fw-bold tb" href="{% url 'item_view_or_edit' i.id %}"><span class="fa fa-eye pe-2 tg"></span> View / Edit</a></li>
+                                                    <li><a class="dropdown-item fw-bold tb" href="{% url 'bank_view_or_edit' i.id %}"><span class="fa fa-eye pe-2 tg"></span> View / Edit</a></li>
                                                     <li><a class="dropdown-item fw-bold tb" type="button" onclick="confirm_delete({{ i.id }})"><span class="fa fa-trash tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</a></li>
                                                     </ul>
                                                 </div>
@@ -149,11 +137,11 @@
             </div>
         </div>
         <div class="col-sm-12 col-lg-9  ps-2 pe-3" style="height: 80%;">
-          <div id="item_get_detail_target">
+          <div id="bank_get_detail_target">
             <div class="row m-0" style="height:20%">
                 <div class="card bg-light bs p-3 mb-3">
                     <div class="d-flex justify-content-between">
-                        <p class="tb fw-bolder fs-2">BANK NAME <span class="fa fa-share ps-1 tb"></span></p>
+                        <p class="tb fw-bolder fs-2">{{ bank.bank_name|upper }} <span class="fa fa-share ps-1 tb"></span></p>
                         <div class="btn-group mb-1">
                             <button class="btn btn-sm btn-primary fs-2" style="border-radius: 5px;" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="fa fa-sliders-h pe-1"></span> 
@@ -237,10 +225,8 @@
                                                         <div style="width: 10px;height: 10px;box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.205);border-radius: 50%;" {% if forloop.counter|mod:10 == 0 %}class="bg-success"{% elif forloop.counter|mod:10 == 1 %}class="bg-warning"{% elif forloop.counter|mod:10 == 2 %}class="bg-danger"{% elif forloop.counter|mod:10 == 3 %}class="bg-success"{% elif forloop.counter|mod:10 == 4 %}class="bg-info"{% elif forloop.counter|mod:10 == 5 %}class="bg-primary"{% elif forloop.counter|mod:10 == 6 %}class="bg-secondary"{% elif forloop.counter|mod:10 == 7 %}class="bg-warning"{% elif forloop.counter|mod:10 == 8 %}class="bg-danger"{% else %}class="bg-pink"{% endif %}></div>
                                                     </div>
                                                 </td>
-                                                <!-- <td class="text-center">{% if first_item.item_opening_stock %}{{ first_item.item_opening_stock }}{% else %}0{% endif %}</td> -->
                                                 <td class="text-">{{ i.trans_type|capfirst }}</td>
                                                 <td class="text-center"></td>
-                                                <!-- <td class="text-center">{% if first_item.item_opening_stock %}{{ first_item.item_opening_stock }}{% else %}0{% endif %}</td> -->
                                                 <td class="text-center"></td>
                                                 <td class="text-center">{{ i.trans_date|date:"d-m-Y" }}</td>
                                                 <td class="text-center">{{ i.trans_qty }}</td>
@@ -261,16 +247,16 @@
                                                 </td>
                                             </tr>
                                         {% endfor %}
-                                        <tr {% if bank.open_balance == 0 %} hidden{% endif %}>
+                                        <tr {% if bank.open_balance == 0 %} hidden{% endif %} class="fs-2">
                                             <td class="text-center" style="padding-top: 1.4rem;">
                                                 <div class="d-flex justify-content-center">
                                                     <div style="width: 10px;height: 10px;" class="bg-dark rounded-pill bs_sm"></div>
                                                 </div>
                                             </td>
-                                            <td class="text-center"></td>
-                                            <td class="text-center">{{ first_item.item_date|date:"d-m-Y" }}</td>
-                                            <td class="text-center"></td>
-                                            <td class="text-center">₹{{ first_item.item_at_price }}</td>
+                                            <td class="text-center">Open. Bal.</td>
+                                            <td class="text-center">{{ bank.created_by|upper }}</td>
+                                            <td class="text-center">{{ bank.as_of_date|date:"d-m-Y" }}</td>
+                                            <td class="text-center">₹{{ bank.open_balance }}</td>
                                             <td class="p-0 pt-1 m-0">
                                                 <div class="btn-group mb-1">
                                                     <button style="border: none;background: none;" type="button" class="ropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
@@ -325,27 +311,31 @@
     </div>
 </div>
 
-
-
-
 <script>
     $(document).ready(function(){
-        var table = $('#table1 tr td .amount_tuncate')
-        for(i=0;i<table.length;i++)
-        {
-            alert(i)
-        }
-        var b = $('.amount_tuncate').text()
-        var a = parseInt(b)
-        if (a >= 1e9) {
-            $('.amount_tuncate').text( '₹'+(a / 1e9).toFixed() + 'B');
-        } else if (a >= 1e6) {
-            $('.amount_tuncate').text( '₹'+(a / 1e6).toFixed() + 'M');
-        } else if (a >= 1e3) {
-            $('.amount_tuncate').text( '₹'+(a / 1e3).toFixed() + 'K');
-        } else {
-            $('.amount_tuncate').text( '₹'+a.toFixed());
-        }
+        var b,a,temp
+        $('.amount_truncate').each(function(){
+            b =$(this).text()
+            a = parseInt(b)
+            temp = a
+            if (temp<0)
+            {
+                a = a*-1
+            }
+            if (a >= 1e9) {
+                $(this).text( '₹'+(a / 1e9).toFixed() + 'B');
+            } else if (a >= 1e6) {
+                $(this).text( '₹'+(a / 1e6).toFixed() + 'M');
+            } else if (a >= 1e3) {
+                $(this).text( '₹'+(a / 1e3).toFixed() + 'K');
+            } else {
+                $(this).text( '₹'+a.toFixed());
+            }
+            if (temp<0)
+            {
+                $(this).text( '-'+$(this).text( ));
+            }
+        })
     })
 
 
@@ -359,7 +349,25 @@
         $('.hide_table_text_d').html('<span class="fa fa-trash-alt tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete')
     }
     $(document).ready(function() {
-        $("#search_input1").on("keyup", function() {
+        $("#search_item_input").on("keyup",function() {
+            var value = $(this).val().toLowerCase();
+            $("#table1 tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value)>-1);
+            });
+        });
+        $("#close_seacrh").on("click",function() {
+            setInterval(function(){
+                var value = $('#search_item_input').val().toLowerCase();
+                $("#table1 tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value)>-1);
+                });
+            },100)
+        });
+    });
+
+    
+    $(document).ready(function() {
+        $("#search_input1").on("keyup",function() {
             var value = $(this).val().toLowerCase();
             $("#myTable tbody tr").filter(function() {
                 $(this).toggle($(this).text().toLowerCase().indexOf(value)>-1);

@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -154,6 +155,18 @@ class BankModel(models.Model):
     card_type = models.CharField(max_length=255)
     open_balance = models.BigIntegerField(null=True)
     current_balance = models.BigIntegerField(null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=255,null=True)
+
+class BankTransactionModel(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE,blank=True,null=True)
+    company = models.ForeignKey(company,on_delete=models.CASCADE,blank=True,null=True)
+    from_here = models.CharField(max_length=255)
+    to_here = models.CharField(max_length=255)
+    type = models.CharField(max_length=255,null=True)
+    name = models.CharField(max_length=255,null=True)
+    date = models.DateField()
+    amount = models.BigIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add=True)
 
 #************************   ASHIKH V U (end) *************************

@@ -126,6 +126,11 @@ urlpatterns = [
     path('bank_create_new',views.bank_create_new,name='bank_create_new'),
     path('bank_delete/<int:pk>',views.bank_delete,name='bank_delete'),
     path('account_num_check',views.account_num_check,name='account_num_check'),
+    path('account_num_check_for_edit/<int:pk>',views.account_num_check_for_edit,name='account_num_check_for_edit'),
+    path('bank_ifsc_check',views.bank_ifsc_check,name='bank_ifsc_check'),
+    path('bank_view_or_edit/<int:pk>',views.bank_view_or_edit,name='bank_view_or_edit'),
+    path('bank_update/<int:pk>',views.bank_update,name='bank_update'),
+    # path('bank_to_bank_transaction_create',views.bank_to_bank_transaction_create,name='bank_to_bank_transaction_create'),
     
 
     #******************************************   ASHIKH V U (start) ****************************************************
