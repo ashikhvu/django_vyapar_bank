@@ -123,6 +123,7 @@ urlpatterns = [
     path('get_bank_to_bank',views.get_bank_to_bank,name='get_bank_to_bank'),
     path('get_bank_to_cash',views.get_bank_to_cash,name='get_bank_to_cash'),
     path('get_cash_to_bank',views.get_cash_to_bank,name='get_cash_to_bank'),
+    path('get_adjust_bank_balance',views.get_adjust_bank_balance,name='get_adjust_bank_balance'),
     path('bank_create_new',views.bank_create_new,name='bank_create_new'),
     path('bank_delete/<int:pk>',views.bank_delete,name='bank_delete'),
     path('account_num_check',views.account_num_check,name='account_num_check'),
@@ -130,8 +131,14 @@ urlpatterns = [
     path('bank_ifsc_check',views.bank_ifsc_check,name='bank_ifsc_check'),
     path('bank_view_or_edit/<int:pk>',views.bank_view_or_edit,name='bank_view_or_edit'),
     path('bank_update/<int:pk>',views.bank_update,name='bank_update'),
-    # path('bank_to_bank_transaction_create',views.bank_to_bank_transaction_create,name='bank_to_bank_transaction_create'),
-    
+    path('bank_to_bank_transaction_create',views.bank_to_bank_transaction_create,name='bank_to_bank_transaction_create'),
+    path('bank_to_cash_transaction_create',views.bank_to_cash_transaction_create,name='bank_to_cash_transaction_create'),
+    path('cash_to_bank_transaction_create',views.cash_to_bank_transaction_create,name='cash_to_bank_transaction_create'),
+    path('get_adjust_bank_balance_create',views.get_adjust_bank_balance_create,name='get_adjust_bank_balance_create'),
+    path('delete_bank_open_balance/<int:pk>',views.delete_bank_open_balance,name='delete_bank_open_balance'),
+    path('delete_bank_transaction/<int:pk>',views.delete_bank_transaction,name='delete_bank_transaction'),
+    path('view_or_edit_bank_transaction/<int:pk>',views.view_or_edit_bank_transaction,name='view_or_edit_bank_transaction'),
+    path('update_bank_transaction/<int:pk>',views.update_bank_transaction,name='update_bank_transaction'),
 
     #******************************************   ASHIKH V U (start) ****************************************************
 

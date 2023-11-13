@@ -41,6 +41,12 @@
     .bg-pink{
         background-color: rgb(239, 3, 82)
     }
+    .color_change{
+        color: black;
+    }
+    .color_change:hover{
+        color: blue
+    }
 </style>
 
 <div class="body-wrapper">
@@ -145,7 +151,7 @@
                         <div class="btn-group mb-1">
                             <button class="btn btn-sm btn-primary fs-2" style="border-radius: 5px;" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="fa fa-sliders-h pe-1"></span> 
-                                DEPOSIT / WITHDRAW
+                                <span>DEPOSIT / WITHDRAW</span> <span class="fa fa-caret-down ps-2"></span>
                             </button>
                             <ul class="dropdown-menu">
                             <li 
@@ -153,20 +159,24 @@
                             hx-trigger="click delay:0s"
                             hx-target="#bank_modal_get_details"
                             >
-                                <a class="dropdown-item fw-bold tb" href="" data-bs-target="#myModal1" data-bs-toggle="modal"> BANK TO BANK</a></li>
+                                <a class="dropdown-item fw-bold tb color_change" href="" data-bs-target="#myModal1" data-bs-toggle="modal"> BANK TO BANK</a></li>
                             <li
                             hx-get="{% url 'get_bank_to_cash' %}"
                             hx-trigger="click delay:0s"
                             hx-target="#bank_modal_get_details"
                             >
-                            <a class="dropdown-item fw-bold tb" href="" data-bs-target="#myModal1" data-bs-toggle="modal"> BANK TO CASH</a></li>
+                            <a class="dropdown-item fw-bold tb color_change" href="" data-bs-target="#myModal1" data-bs-toggle="modal"> BANK TO CASH</a></li>
                             <li
                             hx-get="{% url 'get_cash_to_bank' %}"
                             hx-trigger="click delay:0s"
                             hx-target="#bank_modal_get_details"
-                            ><a class="dropdown-item fw-bold tb" type="button" data-bs-target="#myModal1" data-bs-toggle="modal"> CASH TO BANK</a></li>
+                            ><a class="dropdown-item fw-bold tb color_change" type="button" data-bs-target="#myModal1" data-bs-toggle="modal"> CASH TO BANK</a></li>
 
-                            <li><a class="dropdown-item fw-bold tb" href=""> ACCOUNT BALANCE</a></li>
+                            <li
+                            hx-get="{% url 'get_adjust_bank_balance' %}"
+                            hx-trigger="click delay:0s"
+                            hx-target="#bank_modal_get_details"
+                            ><a class="dropdown-item fw-bold tb color_change" href="" type="button" data-bs-target="#myModal1" data-bs-toggle="modal"> ADJUST BANK BALANCE</a></li>
                             </ul>
                         </div>
                     </div>
@@ -176,7 +186,7 @@
                         <!-- <p class="tb fw-bolder fs-2">STOCK QUANTITY  <span class="ps-2 tg"></span></p> -->
                     </div>
                     <div class="d-flex justify-content-between">
-                        <p class="tb fw-bolder fs-2">IFSC CODE  <span class="ps-2 tg">{{ bank.ifsc }}</span></p>
+                        <p class="tb fw-bolder fs-2">IFSC CODE  <span class="ps-2 tg">{{ bank.ifsc|upper }}</span></p>
                         
                     </div>
                     <div class="d-flex justify-content-between">
@@ -218,18 +228,84 @@
                                         <th class="text-center p-0 m-0"></th>
                                     </thead>
                                     <tbody>
+                                        <tr {% if bank.open_balance == 0 %} hidden{% endif %} class="fs-2">
+                                            <td class="text-center" style="padding-top: 1.4rem;">
+                                                <div class="d-flex justify-content-center">
+                                                    <div style="width: 10px;height: 10px;" class="bg-dark rounded-pill bs_sm"></div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">Open. Balance</td>
+                                            <td class="text-center">Opening Blance</td>
+                                            <td class="text-center">{{ bank.as_of_date|date:"d-m-Y" }}</td>
+                                            <td class="text-center fw-bolder">{% if bank.open_balance < 0 %}-₹{{ bank.open_balance|mul:-1 }}{% else %}₹{{ bank.open_balance }}{% endif %}</td>
+                                            <td class="p-0 pt-1 m-0">
+                                                <div class="btn-group mb-1">
+                                                    <button style="border: none;background: none;" type="button" class="ropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <span class="fa fa-ellipsis-v text-dark fs-1 ps-"></span>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                      <li><a class="dropdown-item fw-bold tb hide_table_text_v" href="{% url 'bank_view_or_edit' bank.id %}"><span class="fa fa-eye pe-2 tg"></span> View / Edit</a></li>
+                                                      <li><a class="dropdown-item fw-bold tb hide_table_text_d" onclick="bank_open_stk_delete({{ bank.id }})"><span class="fa fa-trash tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
                                         {% for i in transactions %}
-                                            <tr>
+                                            <tr class="fs-2">
                                                 <td class="text-center" style="padding-top: 1.4rem;">
                                                     <div class="d-flex justify-content-center">
                                                         <div style="width: 10px;height: 10px;box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.205);border-radius: 50%;" {% if forloop.counter|mod:10 == 0 %}class="bg-success"{% elif forloop.counter|mod:10 == 1 %}class="bg-warning"{% elif forloop.counter|mod:10 == 2 %}class="bg-danger"{% elif forloop.counter|mod:10 == 3 %}class="bg-success"{% elif forloop.counter|mod:10 == 4 %}class="bg-info"{% elif forloop.counter|mod:10 == 5 %}class="bg-primary"{% elif forloop.counter|mod:10 == 6 %}class="bg-secondary"{% elif forloop.counter|mod:10 == 7 %}class="bg-warning"{% elif forloop.counter|mod:10 == 8 %}class="bg-danger"{% else %}class="bg-pink"{% endif %}></div>
                                                     </div>
                                                 </td>
-                                                <td class="text-">{{ i.trans_type|capfirst }}</td>
-                                                <td class="text-center"></td>
-                                                <td class="text-center"></td>
-                                                <td class="text-center">{{ i.trans_date|date:"d-m-Y" }}</td>
-                                                <td class="text-center">{{ i.trans_qty }}</td>
+                                                <td class="text-center">{{ i.type|lower|capfirst }}</td>
+                                                <td class="text-center">
+                                                    {% if i.type == 'Cash Deposit' %}
+                                                        Cash Deposit
+                                                    {% elif i.type == 'Cash Withdraw' %}
+                                                        Cash Withdraw
+                                                    {% elif i.type == 'Adjustment Reduce' %}
+                                                        Adjustment Reduce
+                                                    {% elif i.type == 'Adjustment Increase' %}
+                                                    Adjustment Increase
+                                                    {% else %}
+                                                        {% if i.from_here.id == bank.id %}
+                                                            To: <span class="fw-bolder">{{ i.to_here.bank_name|upper }}</span>
+                                                        {% elif i.to_here.id == bank.id %}
+                                                            From : <span class="fw-bolder">{{ i.from_here.bank_name|upper }}</span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center">{{ i.date|date:"d-m-Y" }}</td>
+                                                <td class="text-center fw-bolder">
+                                                    {% if i.type == 'Cash Withdraw' %}
+                                                        <p style="color: rgb(255, 0, 0);">- ₹{{ i.amount }}</p>
+                                                    {% elif  i.type == 'Adjustment Reduce'  %}
+                                                        <p style="color: rgb(255, 0, 0);">- ₹{{ i.amount }}</p>
+                                                    {% elif  i.type == 'Adjustment Increase'  %}
+                                                        <p style="color: green;">+ ₹{{ i.amount }}</p>
+                                                    {% elif i.from_here.id == bank.id %}
+                                                        <p style="color: rgb(255, 0, 0);">- ₹{{ i.amount }}</p>
+                                                    {% else %}
+                                                        <p style="color: green;">+ ₹{{ i.amount }}</p>
+                                                    {% endif %}
+                                                    <!-- {% if i.from_here.id == bank.id %} 
+                                                        {% if i.type == 'Adjustment Increse' %}
+                                                            <p style="color: green;">+ ₹{{ i.amount }}</p>
+                                                        {% elif i.type == 'Adjustment Reduce' %}
+                                                            <p style="color: rgb(255, 0, 0);">- ₹{{ i.amount }}</p>
+                                                        {% else %}
+                                                            <p style="color: rgb(255, 0, 0);">- ₹{{ i.amount }}</p>   
+                                                        {% endif %}      
+                                                    {% elif i.to_here == bank.id %}
+                                                    {% if i.type == 'Adjustment Increse' %}
+                                                            <p style="color: green;">+ ₹{{ i.amount }}</p>
+                                                        {% elif i.type == 'Adjustment Reduce' %}
+                                                            <p style="color: rgb(255, 0, 0);">- ₹{{ i.amount }}</p>
+                                                        {% else %}   
+                                                            <p style="color: green;">+ ₹{{ i.amount }}</p>  
+                                                        {% endif %}
+                                                    {% endif %} -->
+                                                </td>
                                                 <td class="p-0 pt-1 m-0">
                                                     <div class="btn-group mb-1">
                                                         <button style="border: none;background: none;" type="button" class="ropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
@@ -237,38 +313,16 @@
                                                         </button>
                                                         <ul class="dropdown-menu">
                                                           <li><button type="button" data-bs-toggle="modal" data-bs-target="#myModal2" class="dropdown-item fw-bold tb hide_table_text_v" 
-                                                            hx-get="{% url 'item_transaction_view_or_edit' first_item.id i.id %}"
+                                                            hx-get="{% url 'view_or_edit_bank_transaction' i.id %}"
                                                             hx-trigger="click delay:0s"
-                                                            hx-target="#item_transaction_view_or_edit_target"
+                                                            hx-target="#bank_modal_view_or_edit"
                                                             ><span class="fa fa-eye pe-2 tg"></span> View / Edit</button></li>
-                                                          <li><button type="button" onclick="delete_transaction({{ i.id }})" class="dropdown-item fw-bold tb hide_table_text_d" href=""><span class="fa fa-trash tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</button></li>
+                                                          <li><button type="button" onclick="delete_bank_transaction({{ i.id }})" class="dropdown-item fw-bold tb hide_table_text_d" href=""><span class="fa fa-trash tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</button></li>
                                                         </ul>
                                                     </div>
                                                 </td>
                                             </tr>
                                         {% endfor %}
-                                        <tr {% if bank.open_balance == 0 %} hidden{% endif %} class="fs-2">
-                                            <td class="text-center" style="padding-top: 1.4rem;">
-                                                <div class="d-flex justify-content-center">
-                                                    <div style="width: 10px;height: 10px;" class="bg-dark rounded-pill bs_sm"></div>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">Open. Bal.</td>
-                                            <td class="text-center">{{ bank.created_by|upper }}</td>
-                                            <td class="text-center">{{ bank.as_of_date|date:"d-m-Y" }}</td>
-                                            <td class="text-center">₹{{ bank.open_balance }}</td>
-                                            <td class="p-0 pt-1 m-0">
-                                                <div class="btn-group mb-1">
-                                                    <button style="border: none;background: none;" type="button" class="ropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        <span class="fa fa-ellipsis-v text-dark fs-1 ps-"></span>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                      <li><a class="dropdown-item fw-bold tb hide_table_text_v" href=""><span class="fa fa-eye pe-2 tg"></span> View / Edit</a></li>
-                                                      <li><a class="dropdown-item fw-bold tb hide_table_text_d" onclick="item_open_stk_delete({{ first_item.id }})"><span class="fa fa-trash tr" style="padding-inline-start: 0.1rem;padding-inline-end:0.7rem ;"></span> Delete</a></li>
-                                                    </ul>
-                                                </div>
-                                            </td>
-                                        </tr>
                                     </tbody>
                             </table>
                         </div>
@@ -424,7 +478,7 @@
             }
         });
     }
-    function delete_transaction(Id)
+    function delete_bank_transaction(Id)
     {
         swal({
             title: "Confirmation !",
@@ -445,10 +499,10 @@
                 .then((willDelete) => {
                 if (willDelete) {
                     // Redirect to the delete_teacher view with the teacher's ID
-                    window.location.href = "{% url 'transaction_delete' 0 %}".replace('0', Id);
+                    window.location.href = "{% url 'delete_bank_transaction' 0 %}".replace('0', Id);
                     
                 } else {
-                    window.location.href = "{% url 'transaction_delete' 0 %}".replace('0', Id);
+                    window.location.href = "{% url 'delete_bank_transaction' 0 %}".replace('0', Id);
                 }
             });
                 // 
@@ -458,7 +512,7 @@
         });
     }
 
-    function item_open_stk_delete(Id)
+    function bank_open_stk_delete(Id)
     {
         swal({
             title: "Confirmation !",
@@ -479,10 +533,10 @@
                 .then((willDelete) => {
                 if (willDelete) {
                     // Redirect to the delete_teacher view with the teacher's ID
-                    window.location.href = "{% url 'item_delete_open_stk' 0 %}".replace('0', Id);
+                    window.location.href = "{% url 'delete_bank_open_balance' 0 %}".replace('0', Id);
                     
                 } else {
-                    window.location.href = "{% url 'item_delete_open_stk' 0 %}".replace('0', Id);
+                    window.location.href = "{% url 'delete_bank_open_balance' 0 %}".replace('0', Id);
                 }
             });
                 // 
